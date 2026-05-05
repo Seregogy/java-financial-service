@@ -22,8 +22,8 @@ public class CarRepositoryImpl implements CarRepository {
 
     @Override
     public UUID create(Car entity) {
-        int yearValue = entity.getYear().getYear();
 
+        int yearValue = entity.getYear().getYear();
         double costValue = entity.getCost().doubleValue();
 
         return context.insertInto(CAR)
@@ -81,7 +81,6 @@ public class CarRepositoryImpl implements CarRepository {
     public UUID Update(UUID idCar, Car car) {
 
         int yearValue = car.getYear().getYear();
-
         double costValue = car.getCost().doubleValue();
 
         return context.update(CAR)

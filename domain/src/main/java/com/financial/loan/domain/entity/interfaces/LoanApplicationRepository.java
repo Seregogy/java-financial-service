@@ -2,6 +2,7 @@ package com.financial.loan.domain.entity.interfaces;
 
 import com.financial.loan.domain.entity.ApplicationHistory;
 import com.financial.loan.domain.entity.LoanApplication;
+import com.financial.loan.domain.entity.enums.Status;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -9,20 +10,21 @@ import java.util.List;
 import java.util.UUID;
 
 public interface LoanApplicationRepository {
-    List<LoanApplication> getAll();
+    public List<LoanApplication> getAll();
 
-    LoanApplication get(UUID loanApplicationId);
+    public LoanApplication get(UUID loanApplicationId);
 
-    UUID create(LoanApplication entity);
+    public UUID create(LoanApplication entity);
 
-    UUID update(
+    public UUID update(
             UUID loanApplicationId,
             UUID carId,
             UUID userId,
             BigDecimal loanAmount,
             BigDecimal firstPayment,
-            LocalDateTime term
+            LocalDateTime term,
+            Status status
     );
 
-    UUID delete(UUID loanApplicationId);
+    public UUID delete(UUID loanApplicationId);
 }
