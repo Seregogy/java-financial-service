@@ -1,7 +1,7 @@
 package com.financial.loan.domain.entity.usecase.loan;
 
-
 import com.financial.loan.domain.entity.entity.LoanApplication;
+import com.financial.loan.domain.entity.domainexception.LoanDeletionException;
 import com.financial.loan.domain.entity.interfaces.LoanApplicationRepository;
 import lombok.AllArgsConstructor;
 
@@ -14,17 +14,16 @@ public class UpdateLoanUseCase {
 
     private final LoanApplicationRepository _loanRepository;
 
-    public Result<UUID> execute(UUID idLoan ,UUID carId, UUID userId, BigDecimal loanAmount, BigDecimal firstPayment,  LocalDateTime term) {
-        Result<LoanApplication> loanResult = LoanApplication.create(carId, userId, loanAmount, firstPayment , term);
-
-        if (loanResult.isFailure()) {
-            return  Result.failure(loanResult.getError());
+    public UUID execute(UUID idLoan, UUID carId, UUID userId, BigDecimal loanAmount, BigDecimal firstPayment, LocalDateTime term) {
+        
+        if (idLoan == null) {
+            throw new LoanDeletionException("ID обновляемой заявки не может быть null");
         }
 
-        LoanApplication loan = loanResult.getValue();
+        LoanApplication loan = LoanApplication.create(carId, userId, loanAmount, firstPayment, term);
 
-        _loanRepository.update(idLoan , loan);
+        _loanRepository.update(idLoan, loan);
 
-        return Result.success(loan.getId());
+        return loan.getId();
     }
 }

@@ -1,6 +1,7 @@
-
 package com.financial.loan.domain.entity.usecase.loan;
+
 import com.financial.loan.domain.entity.entity.LoanApplication;
+import com.financial.loan.domain.entity.domainexception.UserNotFoundException;
 import com.financial.loan.domain.entity.interfaces.LoanApplicationRepository;
 import lombok.AllArgsConstructor;
 
@@ -12,19 +13,18 @@ public class GetLoansByUserIdUseCase {
 
     private final LoanApplicationRepository loanRepository;
 
-    public Result<List<LoanApplication>> execute(UUID idUser) {
+    public List<LoanApplication> execute(UUID idUser) {
 
-        if (idUser == null ) {
-            return Result.failure("ID заявки не может быть пустым или отрицательным");
+        if (idUser == null) {
+            throw new UserNotFoundException("ID пользователя не может быть пустым");
         }
 
-        List<LoanApplication> loan = loanRepository.getByIdUser(idUser);
+        List<LoanApplication> loans = loanRepository.getByIdUser(idUser);
 
-        if (loan == null) {
-            return Result.failure("Заявка с ID " + idUser + " не найдена");
+        if (loans == null || loans.isEmpty()) {
+            throw new UserNotFoundException(idUser);
         }
 
-
-        return Result.success(loan);
+        return loans;
     }
 }

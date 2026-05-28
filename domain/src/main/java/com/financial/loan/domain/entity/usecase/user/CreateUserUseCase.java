@@ -11,17 +11,12 @@ import java.util.UUID;
 public class CreateUserUseCase {
     private final UserRepository userRepository;
 
-    public Result<UUID> execute(String fullName, Role role) {
-        Result<User> userResult = User.create(fullName, role);
-
-        if (userResult.isFailure()) {
-            return Result.failure(userResult.getError());
-        }
-
-        User user = userResult.getValue();
+    public UUID execute(String fullName, Role role) {
+        
+        User user = User.create(fullName, role);
 
         userRepository.create(user);
 
-        return Result.success(user.getId());
+        return user.getId();
     }
 }
