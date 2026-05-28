@@ -1,7 +1,6 @@
 package com.financial.loan.domain.entity.usecase.loanhistory;
 
-import com.financial.loan.domain.entity.ApplicationHistory;
-import com.financial.loan.domain.entity.Result;
+import com.financial.loan.domain.entity.entity.ApplicationHistory;
 import com.financial.loan.domain.entity.interfaces.ApplicationHistoryRepository;
 import lombok.AllArgsConstructor;
 

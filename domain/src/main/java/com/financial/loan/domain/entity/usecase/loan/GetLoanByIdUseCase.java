@@ -1,6 +1,5 @@
 package com.financial.loan.domain.entity.usecase.loan;
-import com.financial.loan.domain.entity.LoanApplication;
-import com.financial.loan.domain.entity.Result;
+import com.financial.loan.domain.entity.entity.LoanApplication;
 import com.financial.loan.domain.entity.interfaces.LoanApplicationRepository;
 import lombok.AllArgsConstructor;
 import java.util.UUID;

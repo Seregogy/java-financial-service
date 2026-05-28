@@ -1,5 +1,5 @@
 package com.financial.loan.domain.entity.interfaces;
-import com.financial.loan.domain.entity.LoanApplication;
+import com.financial.loan.domain.entity.entity.LoanApplication;
 import java.util.List;
 import java.util.UUID;
 
