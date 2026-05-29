@@ -1,21 +1,20 @@
 package com.financial.loan.domain.entity.interfaces;
 
-import com.financial.loan.domain.entity.ApplicationHistory;
-import com.financial.loan.domain.entity.Car;
+import com.financial.loan.domain.entity.entity.ApplicationHistory;
 
 import java.util.List;
 import java.util.UUID;
 
 public interface ApplicationHistoryRepository
 {
-    public UUID create(ApplicationHistory entity);
+    List<ApplicationHistory> getAll(int page, int size);
 
-    public List<ApplicationHistory> getAll();
+    ApplicationHistory getById(UUID ApplicationHistoryId);
 
-    public Car  getByLoan(UUID idLoan);
+    UUID create(ApplicationHistory entity);
 
-    public UUID Delete(UUID id);
+    UUID update(UUID idLoan ,ApplicationHistory loan);
 
-    public UUID Update(UUID idLoa , Car car);
+    UUID delete(UUID ApplicationHistoryId);
 
 }

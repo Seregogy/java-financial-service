@@ -1,0 +1,13 @@
+package com.financial.loan.domain.entity.domainexception;
+import com.financial.loan.domain.entity.enums.Status;
+
+public class LoanDeletionException extends DomainException {
+
+    public LoanDeletionException(String message) {
+        super("LOAN_007", message);
+    }
+
+    public LoanDeletionException(Status status) {
+        super("LOAN_007", String.format("Cannot delete loan application with status: %s", status));
+    }
+}

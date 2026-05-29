@@ -15,7 +15,9 @@ repositories {
 dependencies {
 	implementation(libs.spring.boot.security)
 	implementation(libs.spring.boot.webmvc)
-
+	implementation(project(":domain"))
+	implementation("org.springframework.boot:spring-boot-starter-validation")
+	implementation("jakarta.validation:jakarta.validation-api")
 	developmentOnly(libs.spring.boot.docker.compose)
 
 	testImplementation(libs.spring.boot.security.test)
