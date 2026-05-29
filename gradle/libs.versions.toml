@@ -1,6 +1,6 @@
 [versions]
 junitBomVersion = "5.10.0"
-lombokVersion = "1.18.36"
+lombokVersion = "1.18.38"
 postgresDriverVersion = "42.7.3"
 
 [libraries]

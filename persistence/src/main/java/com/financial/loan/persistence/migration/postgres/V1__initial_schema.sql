@@ -1,5 +1,5 @@
 CREATE TABLE "user" (
-    id SERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(255),
     surname VARCHAR(255),
     patronymic VARCHAR(255),
@@ -10,8 +10,8 @@ CREATE TABLE "user" (
 );
 
 CREATE TABLE user_additional_data (
-    id SERIAL PRIMARY KEY,
-    user_id INTEGER UNIQUE,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID UNIQUE,
     birthday DATE,
     passport_series VARCHAR(4),
     passport_number VARCHAR(6),
@@ -20,11 +20,11 @@ CREATE TABLE user_additional_data (
     created_at TIMESTAMP,
     updated_at TIMESTAMP,
 
-    FOREIGN KEY (user_id) REFERENCES "user"(id)
+    FOREIGN KEY (user_id) REFERENCES "user"(id) ON DELETE CASCADE
 );
 
 CREATE TABLE car (
-    id SERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     brand VARCHAR(255),
     model VARCHAR(255),
     year INTEGER,
@@ -35,9 +35,9 @@ CREATE TABLE car (
 );
 
 CREATE TABLE loan_application (
-    id SERIAL PRIMARY KEY,
-    car_id INTEGER UNIQUE,
-    user_id INTEGER,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    car_id UUID UNIQUE,
+    user_id UUID,
 
     loan_amount DOUBLE PRECISION,
     first_payment DOUBLE PRECISION,
@@ -48,13 +48,13 @@ CREATE TABLE loan_application (
     created_at TIMESTAMP,
     updated_at TIMESTAMP,
 
-    FOREIGN KEY (car_id) REFERENCES car(id),
-    FOREIGN KEY (user_id) REFERENCES "user"(id)
+    FOREIGN KEY (car_id) REFERENCES car(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES "user"(id) ON DELETE CASCADE
 );
 
 CREATE TABLE application_history (
-    id SERIAL PRIMARY KEY,
-    application_id INTEGER,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    application_id UUID,
 
     old_status VARCHAR(64),
     new_status VARCHAR(64),
@@ -62,5 +62,5 @@ CREATE TABLE application_history (
     created_at TIMESTAMP,
     changed_at TIMESTAMP,
 
-    FOREIGN KEY (application_id) REFERENCES loan_application(id)
+    FOREIGN KEY (application_id) REFERENCES loan_application(id) ON DELETE CASCADE
 );

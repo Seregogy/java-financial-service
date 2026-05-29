@@ -11,7 +11,7 @@ public interface CarRepository
 
     public List<Car> getAll();
 
-    public Car  getByLoan(UUID idLoan);
+    public Car getByLoan(UUID idLoan);
 
     public UUID Delete(UUID idCar);
 

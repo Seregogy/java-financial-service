@@ -1,31 +1,26 @@
 package com.financial.loan.domain.entity.interfaces;
 
-import com.financial.loan.domain.entity.ValueObject.Passport;
-import com.financial.loan.domain.entity.entity.UserAdditionalData;
+import com.financial.loan.domain.entity.UserAdditionalData;
+import com.financial.loan.domain.entity.exception.UserAdditionalDataAlreadyExists;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 public interface UserAdditionalDataRepository {
+    UserAdditionalData getById(UUID userId);
 
-
-    Passport getPassportByUserId(UUID user);
-
-
-    //снизу бред
-    UserAdditionalDataRepository getById(UUID userAdditionalDataId);
-
-    UUID createUserAdditionalData(UserAdditionalData entity);
-
-    UUID updateUserAdditionalData(
+    UUID createUserAdditionalData(
             UUID userId,
             LocalDateTime birthday,
-            String password,
-            BigDecimal monthlyIncome
+            String passwordHash,
+            BigDecimal monthlyIncome,
+            String passport
+    ) throws UserAdditionalDataAlreadyExists;
+
+    UserAdditionalData updateUserAdditionalData(
+        UserAdditionalData entity
     );
 
-
-
-    UUID deleteUserAdditionalData(UUID userAdditionalDataId);
+    UUID deleteAdditionalDataForUser(UUID userAdditionalDataId);
 }

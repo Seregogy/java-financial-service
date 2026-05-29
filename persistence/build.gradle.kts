@@ -11,11 +11,16 @@ repositories {
 }
 
 dependencies {
+    implementation(project(":domain"))
+
 	testImplementation(platform(libs.junit.bom))
 	testImplementation(libs.junit.jupiter)
 
 	implementation(libs.postgres.driver)
 	jooqGenerator(libs.postgres.driver)
+
+    compileOnly(libs.lombok)
+    annotationProcessor(libs.lombok)
 }
 
 tasks.test {
@@ -32,6 +37,7 @@ jooq {
 					driver = "org.postgresql.Driver"
 					url = "jdbc:postgresql://localhost:5432/auto-loan-service"
 					user = "postgres"
+                    password = "postgres"
 				}
 
 				generator.apply {
@@ -48,7 +54,7 @@ jooq {
 
 					target.apply {
 						packageName = "com.financial.loan.persistence.model"
-						directory = "src/main/java"
+						directory = "src/main/java/generated"
 					}
 				}
 			}
