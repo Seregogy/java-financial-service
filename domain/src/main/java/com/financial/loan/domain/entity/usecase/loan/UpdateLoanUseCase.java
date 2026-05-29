@@ -1,5 +1,6 @@
 package com.financial.loan.domain.entity.usecase.loan;
 
+import com.financial.loan.domain.entity.domainexception.LoanNotFoundException;
 import com.financial.loan.domain.entity.entity.LoanApplication;
 import com.financial.loan.domain.entity.domainexception.LoanDeletionException;
 import com.financial.loan.domain.entity.interfaces.LoanApplicationRepository;
@@ -9,21 +10,26 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import static com.financial.loan.domain.entity.enums.Status.NEW;
+
 @AllArgsConstructor
 public class UpdateLoanUseCase {
 
     private final LoanApplicationRepository _loanRepository;
 
-    public UUID execute(UUID idLoan, UUID carId, UUID userId, BigDecimal loanAmount, BigDecimal firstPayment, LocalDateTime term) {
-        
-        if (idLoan == null) {
-            throw new LoanDeletionException("ID обновляемой заявки не может быть null");
-        }
+    public UUID execute(UUID idLoan, BigDecimal loanAmount, BigDecimal firstPayment) {
+        LoanApplication existing = _loanRepository.getById(idLoan);
 
-        LoanApplication loan = LoanApplication.create(carId, userId, loanAmount, firstPayment, term);
+        if (existing == null)
+            throw new LoanNotFoundException("Заявки с " + idLoan + "не существует");
 
-        _loanRepository.update(idLoan, loan);
+        if (existing.getStatus() != NEW)
+            throw new LoanDeletionException("Нельзя менять заявку в обработке");
 
-        return loan.getId();
+        LoanApplication updated = existing.updateLoanAmount(loanAmount);
+
+        _loanRepository.update(idLoan, updated);
+
+        return idLoan;
     }
 }

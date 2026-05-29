@@ -1,6 +1,8 @@
 package com.financial.loan.domain.entity.usecase.loan;
 
 
+import com.financial.loan.domain.entity.ValueObject.Passport;
+import com.financial.loan.domain.entity.domainexception.DuplicateLoanApplicationException;
 import com.financial.loan.domain.entity.domainexception.TooManyActiveLoansException;
 import com.financial.loan.domain.entity.domainexception.UserNotFoundException;
 import com.financial.loan.domain.entity.entity.LoanApplication;
@@ -50,7 +52,7 @@ public class CreateLoanUseCase {
         }
 
         // 4. Проверяем на дубликаты по паспорту за последние 24 часа
-        String passportNumber = userAdditionalDataRepository.getPassportByUserId(user.getId());
+        Passport passportNumber = userAdditionalDataRepository.getPassportByUserId(user.getId());
         LocalDateTime twentyFourHoursAgo = LocalDateTime.now().minusHours(DUPLICATE_CHECK_HOURS);
 
         boolean hasDuplicateInLast24Hours = userLoans.stream()

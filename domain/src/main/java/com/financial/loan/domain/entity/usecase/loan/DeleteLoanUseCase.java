@@ -43,7 +43,7 @@ public class DeleteLoanUseCase {
 
             case IN_PROGRESS:
             case APPROVED:
-                throw new LoanDeletionException(status);[cite: 5]
+                throw new LoanDeletionException(status);
 
             default:
                 throw new LoanDeletionException("Неизвестный статус заявки");
