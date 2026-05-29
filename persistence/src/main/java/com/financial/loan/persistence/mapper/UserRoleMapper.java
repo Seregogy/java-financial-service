@@ -1,6 +1,6 @@
 package com.financial.loan.persistence.mapper;
 
-import com.financial.loan.domain.entity.enums.Role;
+import com.financial.loan.domain.enums.Role;
 import com.financial.loan.persistence.model.enums.UserRole;
 
 public class UserRoleMapper {

@@ -6,6 +6,7 @@ build/
 !**/src/test/**/build/
 env/postgres_data
 persistence/src/main/java/generated
+.env
 
 ### STS ###
 .apt_generated

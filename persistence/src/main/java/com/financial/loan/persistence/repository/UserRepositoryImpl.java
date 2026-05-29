@@ -1,10 +1,11 @@
 package com.financial.loan.persistence.repository;
 
 import com.financial.loan.domain.entity.User;
-import com.financial.loan.domain.entity.enums.Role;
-import com.financial.loan.domain.entity.interfaces.UserRepository;
+import com.financial.loan.domain.enums.Role;
+import com.financial.loan.domain.interfaces.UserRepository;
 import com.financial.loan.persistence.mapper.UserMapper;
 import com.financial.loan.persistence.mapper.UserRoleMapper;
+import com.financial.loan.persistence.model.tables.Users;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import org.jooq.DSLContext;
@@ -12,7 +13,7 @@ import org.jooq.DSLContext;
 import java.util.List;
 import java.util.UUID;
 
-import static com.financial.loan.persistence.model.Tables.USER;
+import static com.financial.loan.persistence.model.Tables.USERS;
 
 @Builder
 @RequiredArgsConstructor
@@ -25,28 +26,48 @@ public class UserRepositoryImpl implements UserRepository {
      */
     @Override
     public List<User> getUsers() {
-        return context.select(USER)
+        return context.selectFrom(USERS)
                 .fetch()
                 .map(userMapper);
     }
 
     @Override
     public User getUserById(UUID userId) {
-        return context.select(USER)
-                .where(USER.ID.eq(userId))
+        int a = 10;
+        return context.selectFrom(USERS)
+                .where(USERS.ID.eq(userId))
                 .fetchOne()
                 .map(userMapper);
     }
 
     @Override
-    public UUID create(User entity) {
+    public String getUserPasswordByEmail(String email) {
+        return context.select(USERS.PASSWORD)
+                .from(USERS)
+                .where(USERS.EMAIL.eq(email))
+                .fetchOne()
+                .get(Users.USERS.PASSWORD);
+    }
+
+    @Override
+    public User getUserByEmail(String email) {
+        return context.selectFrom(USERS)
+                .where(USERS.EMAIL.eq(email))
+                .fetchOne()
+                .map(userMapper);
+    }
+
+    @Override
+    public UUID create(User entity, String encodedPassword) {
         String[] fullName = entity.getFullName().split(" ");
 
-        return context.insertInto(USER)
-                .set(USER.SURNAME, fullName[0])
-                .set(USER.NAME, fullName[1])
-                .set(USER.PATRONYMIC, fullName[2])
-                .set(USER.ROLE, UserRoleMapper.toDb(entity.getRole()))
+        return context.insertInto(USERS)
+                .set(USERS.SURNAME, fullName[0])
+                .set(USERS.NAME, fullName[1])
+                .set(USERS.PATRONYMIC, fullName[2])
+                .set(USERS.EMAIL, entity.getEmail())
+                .set(USERS.ROLE, UserRoleMapper.toDb(entity.getRole()))
+                .set(USERS.PASSWORD, encodedPassword)
                 .returning()
                 .fetchOne()
                 .getId();
@@ -55,11 +76,11 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public UUID update(UUID userId, String fullName, Role role) {
         String[] fullNameSplitted = fullName.split(" ");
-        return context.update(USER)
-                .set(USER.SURNAME, fullNameSplitted[0])
-                .set(USER.NAME, fullNameSplitted[1])
-                .set(USER.PATRONYMIC, fullNameSplitted[2])
-                .where(USER.ID.eq(userId))
+        return context.update(USERS)
+                .set(USERS.SURNAME, fullNameSplitted[0])
+                .set(USERS.NAME, fullNameSplitted[1])
+                .set(USERS.PATRONYMIC, fullNameSplitted[2])
+                .where(USERS.ID.eq(userId))
                 .returning()
                 .fetchOne()
                 .getId();
@@ -67,8 +88,8 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public UUID delete(UUID userId) {
-        context.delete(USER)
-                .where(USER.ID.eq(userId));
+        context.delete(USERS)
+                .where(USERS.ID.eq(userId));
 
         return userId;
     }

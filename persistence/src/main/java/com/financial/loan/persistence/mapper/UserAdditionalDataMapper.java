@@ -22,10 +22,7 @@ public class UserAdditionalDataMapper implements RecordMapper<Record, UserAdditi
                 null,
                 BigDecimal.valueOf(
                         record.get(USER_ADDITIONAL_DATA.MONTHLY_INCOME)
-                ),
-                record.get(USER_ADDITIONAL_DATA.PASSPORT_SERIES).concat(
-                        record.get(USER_ADDITIONAL_DATA.PASSPORT_NUMBER)
                 )
-        ).getValue();
+        );
     }
 }

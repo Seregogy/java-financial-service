@@ -1,12 +1,14 @@
 package com.financial.loan.persistence.repository;
 
+import com.financial.loan.domain.ValueObject.Passport;
 import com.financial.loan.domain.entity.UserAdditionalData;
-import com.financial.loan.domain.entity.exception.UserAdditionalDataAlreadyExists;
-import com.financial.loan.domain.entity.interfaces.UserAdditionalDataRepository;
+import com.financial.loan.domain.exception.UserAdditionalDataAlreadyExists;
+import com.financial.loan.domain.interfaces.UserAdditionalDataRepository;
 import com.financial.loan.persistence.mapper.UserAdditionalDataMapper;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import org.jooq.DSLContext;
+import org.jooq.Record2;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -68,6 +70,22 @@ public class UserAdditionalDataRepositoryImpl
                 .returning()
                 .fetchOne()
                 .map(userAdditionalDataMapper);
+    }
+
+    @Override
+    public Passport getPassportByUserId(UUID userId) {
+        Record2<String, String> data = context.select(
+                        USER_ADDITIONAL_DATA.PASSPORT_SERIES,
+                        USER_ADDITIONAL_DATA.PASSPORT_NUMBER
+                )
+                .from(USER_ADDITIONAL_DATA)
+                .where(USER_ADDITIONAL_DATA.USER_ID.eq(userId))
+                .fetchOne();
+
+        return new Passport(
+                data.get(USER_ADDITIONAL_DATA.PASSPORT_SERIES),
+                data.get(USER_ADDITIONAL_DATA.PASSPORT_NUMBER)
+        );
     }
 
     @Override

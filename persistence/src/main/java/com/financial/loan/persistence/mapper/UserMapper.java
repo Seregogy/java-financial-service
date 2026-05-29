@@ -1,24 +1,23 @@
 package com.financial.loan.persistence.mapper;
 
 import com.financial.loan.domain.entity.User;
-import com.financial.loan.domain.entity.enums.Role;
 import org.jooq.Record;
 import org.jooq.RecordMapper;
 
-import static com.financial.loan.persistence.model.Tables.USER;
+import static com.financial.loan.persistence.model.tables.Users.USERS;
 
 
 public class UserMapper implements RecordMapper<Record, User> {
     @Override
     public User map(Record record) {
         return User.builder()
-                .id(record.get(USER.ID))
-                .fullName(record.get(USER.NAME))
+                .id(record.get(USERS.ID))
+                .fullName(record.get(USERS.NAME))
                 .role(UserRoleMapper.toDomain(
-                    record.get(USER.ROLE)
+                    record.get(USERS.ROLE)
                 ))
-                .createdAt(record.get(USER.CREATED_AT))
-                .updatedAt(record.get(USER.UPDATED_AT))
+                .createdAt(record.get(USERS.CREATED_AT))
+                .updatedAt(record.get(USERS.UPDATED_AT))
                 .build();
     }
 }

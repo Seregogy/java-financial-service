@@ -1,7 +1,7 @@
 package com.financial.loan.persistence.repository;
 
 import com.financial.loan.domain.entity.Car;
-import com.financial.loan.domain.entity.interfaces.CarRepository;
+import com.financial.loan.domain.interfaces.CarRepository;
 import com.financial.loan.persistence.mapper.CarMapper;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;

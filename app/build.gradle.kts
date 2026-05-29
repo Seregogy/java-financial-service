@@ -13,17 +13,32 @@ repositories {
 }
 
 dependencies {
+	implementation(project(":domain"))
+	implementation(project(":persistence"))
+
 	implementation(libs.spring.boot.security)
 	implementation(libs.spring.boot.webmvc)
-	implementation(project(":domain"))
 	implementation("org.springframework.boot:spring-boot-starter-validation")
 	implementation("jakarta.validation:jakarta.validation-api")
 	developmentOnly(libs.spring.boot.docker.compose)
 
 	testImplementation(libs.spring.boot.security.test)
 	testImplementation(libs.spring.boot.webmvc.test)
+	implementation(libs.spring.boot.validation)
+	implementation(libs.spring.boot.starter.jdbc)
+	implementation(libs.spring.boot.starter.jooq)
 
 	testRuntimeOnly(libs.junit.platform)
+
+	compileOnly(libs.lombok)
+	annotationProcessor(libs.lombok)
+
+	implementation(libs.jjwt.api)
+	implementation(libs.jjwt.impl)
+	implementation(libs.jjwt.jackson)
+
+	implementation(libs.postgres.driver)
+
 }
 
 tasks.withType<Test> {

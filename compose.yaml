@@ -18,6 +18,15 @@ services:
     networks:
       - app-network
 
+  swagger:
+    image: swaggerapi/swagger-ui:v5.32.6
+    ports:
+      - "8083:8080"
+    environment:
+      SWAGGER_JSON: /app/openapi.yaml
+    volumes:
+      - ./docs:/app
+
   flyway:
     image: flyway/flyway:latest-alpine
     container_name: auto-loan-service-flyway
@@ -40,6 +49,8 @@ services:
       ADMINER_DEFAULT_SERVER: postgres
     depends_on:
       - postgres
+    volumes:
+      - ./env/design/adminer.css:/var/www/html/adminer-dark.css
     networks:
       - app-network
 

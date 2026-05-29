@@ -21,6 +21,6 @@ public class CarMapper implements RecordMapper<Record, Car> {
                 record.get(CAR.MODEL),
                 LocalDateTime.of(record.get(CAR.YEAR), 1, 1, 0, 0),
                 BigDecimal.valueOf(record.get(CAR.COST))
-        ).getValue();
+        );
     }
 }
