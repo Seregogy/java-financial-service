@@ -1,74 +1,52 @@
 package com.financial.loan.domain.entity.usecase.loan;
 
-import com.financial.loan.domain.entity.LoanApplication;
-import com.financial.loan.domain.entity.Result;
+import com.financial.loan.domain.entity.entity.LoanApplication;
+import com.financial.loan.domain.entity.domainexception.LoanDeletionException;
 import com.financial.loan.domain.entity.enums.Status;
 import com.financial.loan.domain.entity.interfaces.LoanApplicationRepository;
 import lombok.AllArgsConstructor;
 
 import java.util.UUID;
 
-
 @AllArgsConstructor
 public class DeleteLoanUseCase {
 
     private final LoanApplicationRepository loanRepository;
 
-    public Result<UUID> execute(UUID idLoanApplication) {
+    public UUID execute(UUID idLoanApplication) {
 
-        if (idLoanApplication == null ) {
-
-            return Result.failure("ID заявки должен быть в формате UUID");
+        if (idLoanApplication == null) {
+            throw new LoanDeletionException("ID заявки должен быть в формате UUID");
         }
-
 
         LoanApplication loan = loanRepository.getById(idLoanApplication);
         if (loan == null) {
-            return Result.failure("Заявка с ID " + idLoanApplication + " не найдена");
+            throw new LoanDeletionException("Заявка с ID " + idLoanApplication + " не найдена");
         }
 
+        validateCanDelete(loan.getStatus());
 
-        String errorMessage = canDelete(loan.getStatus());
-        if (errorMessage != null) {
-            return Result.failure(errorMessage);
+        UUID deleted = loanRepository.delete(idLoanApplication);
+        if (deleted == null) {
+            throw new LoanDeletionException("Ошибка при удалении заявки");
         }
 
-
-        try {
-            UUID deleted = loanRepository.delete(idLoanApplication);
-
-            if (deleted==null) {
-                return Result.failure("Ошибка при удалении заявки");
-            }
-
-            return Result.success();
-
-        }
-        catch (Exception e) {
-            return Result.failure("Ошибка удаления: " + e.getMessage());
-        }
+        return deleted;
     }
 
-
-    private String canDelete(Status status) {
+    private void validateCanDelete(Status status) {
         switch (status) {
             case NEW:
-                return null;
+            case REJECTED:
+            case EXPIRED:
+                break;
 
             case IN_PROGRESS:
-                return "Нельзя удалить заявку в статусе 'В обработке' (IN_PROGRESS)";
-
             case APPROVED:
-                return "Нельзя удалить одобренную заявку (APPROVED)";
-
-            case REJECTED:
-                return null;
-
-            case EXPIRED:
-                return null;
+                throw new LoanDeletionException(status);
 
             default:
-                return "Неизвестный статус заявки";
+                throw new LoanDeletionException("Неизвестный статус заявки");
         }
     }
 }

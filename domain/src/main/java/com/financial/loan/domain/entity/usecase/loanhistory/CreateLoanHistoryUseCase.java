@@ -1,7 +1,7 @@
 package com.financial.loan.domain.entity.usecase.loanhistory;
 
-import com.financial.loan.domain.entity.ApplicationHistory;
-import com.financial.loan.domain.entity.Result;
+import com.financial.loan.domain.entity.entity.ApplicationHistory;
+import com.financial.loan.domain.entity.domainexception.validation.ApplicationHistoryValidationException;
 import com.financial.loan.domain.entity.enums.Status;
 import com.financial.loan.domain.entity.interfaces.ApplicationHistoryRepository;
 import lombok.AllArgsConstructor;
@@ -14,14 +14,14 @@ public class CreateLoanHistoryUseCase {
 
     private final ApplicationHistoryRepository applicationHistoryRepository;
 
-    public Result<UUID> execute(
+    public UUID execute(
             UUID applicationId,
             Status oldStatus,
             Status newStatus,
             UUID changedBy,
             LocalDateTime changedAt) {
 
-        Result<ApplicationHistory> historyResult = ApplicationHistory.create(
+        ApplicationHistory history = ApplicationHistory.create(
                 applicationId,
                 oldStatus,
                 newStatus,
@@ -29,13 +29,12 @@ public class CreateLoanHistoryUseCase {
                 changedAt
         );
 
-        if (historyResult.isFailure()) {
-            return Result.failure(historyResult.getError());
+        UUID createdId = applicationHistoryRepository.create(history);
+        
+        if (createdId == null) {
+            throw new ApplicationHistoryValidationException("id", "Не удалось сохранить историю изменения заявки");
         }
 
-        ApplicationHistory history = historyResult.getValue();
-        UUID createdId = applicationHistoryRepository.create(history);
-
-        return Result.success(createdId);
+        return createdId;
     }
 }

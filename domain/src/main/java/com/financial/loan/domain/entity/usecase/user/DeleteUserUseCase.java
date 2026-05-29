@@ -1,6 +1,6 @@
 package com.financial.loan.domain.entity.usecase.user;
 
-import com.financial.loan.domain.entity.Result;
+import com.financial.loan.domain.entity.domainexception.UserNotFoundException;
 import com.financial.loan.domain.entity.interfaces.UserRepository;
 import lombok.AllArgsConstructor;
 
@@ -10,9 +10,13 @@ import java.util.UUID;
 public class DeleteUserUseCase {
     private final UserRepository userRepository;
 
-    public Result<UUID> execute(UUID userId) {
+    public UUID execute(UUID userId) {
+        if (userId == null) {
+            throw new UserNotFoundException("null");
+        }
+
         userRepository.delete(userId);
 
-        return Result.success(userId);
+        return userId;
     }
 }

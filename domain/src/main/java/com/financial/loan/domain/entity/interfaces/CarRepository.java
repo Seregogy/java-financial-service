@@ -1,6 +1,6 @@
 package com.financial.loan.domain.entity.interfaces;
 
-import com.financial.loan.domain.entity.Car;
+import com.financial.loan.domain.entity.entity.Car;
 
 import java.util.List;
 import java.util.UUID;

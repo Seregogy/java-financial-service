@@ -1,6 +1,6 @@
 package com.financial.loan.domain.entity.interfaces;
 
-import com.financial.loan.domain.entity.User;
+import com.financial.loan.domain.entity.entity.User;
 import com.financial.loan.domain.entity.enums.Role;
 
 import java.util.List;

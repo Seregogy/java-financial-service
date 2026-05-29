@@ -1,8 +1,8 @@
 package com.financial.loan.domain.entity.usecase.loan;
 
-
-import com.financial.loan.domain.entity.LoanApplication;
-import com.financial.loan.domain.entity.Result;
+import com.financial.loan.domain.entity.domainexception.LoanNotFoundException;
+import com.financial.loan.domain.entity.entity.LoanApplication;
+import com.financial.loan.domain.entity.domainexception.LoanDeletionException;
 import com.financial.loan.domain.entity.interfaces.LoanApplicationRepository;
 import lombok.AllArgsConstructor;
 
@@ -10,22 +10,26 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import static com.financial.loan.domain.entity.enums.Status.NEW;
+
 @AllArgsConstructor
 public class UpdateLoanUseCase {
 
     private final LoanApplicationRepository _loanRepository;
 
-    public Result<UUID> execute(UUID idLoan ,UUID carId, UUID userId, BigDecimal loanAmount, BigDecimal firstPayment,  LocalDateTime term) {
-        Result<LoanApplication> loanResult = LoanApplication.create(carId, userId, loanAmount, firstPayment , term);
+    public UUID execute(UUID idLoan, BigDecimal loanAmount, BigDecimal firstPayment) {
+        LoanApplication existing = _loanRepository.getById(idLoan);
 
-        if (loanResult.isFailure()) {
-            return  Result.failure(loanResult.getError());
-        }
+        if (existing == null)
+            throw new LoanNotFoundException("Заявки с " + idLoan + "не существует");
 
-        LoanApplication loan = loanResult.getValue();
+        if (existing.getStatus() != NEW)
+            throw new LoanDeletionException("Нельзя менять заявку в обработке");
 
-        _loanRepository.update(idLoan , loan);
+        LoanApplication updated = existing.updateLoanAmount(loanAmount);
 
-        return Result.success(loan.getId());
+        _loanRepository.update(idLoan, updated);
+
+        return idLoan;
     }
 }
