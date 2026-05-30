@@ -479,7 +479,7 @@ paths:
               required:
                 - birthday
                 - monthlyIncome
-                - password
+                - passport
               properties:
                 birthday:
                   type: string
@@ -492,13 +492,13 @@ paths:
                   description: Ежемесячный доход пользователя
                   minimum: 0
                   example: 75000.00
-                password:
+                passport:
                   type: string
-                  description: Пароль пользователя
-                  minLength: 6
-                  maxLength: 100
-                  format: password
-                  example: "securePassword123"
+                  description: Паспорт пользователя
+                  minLength: 13
+                  maxLength: 13
+                  format: passport
+                  example: "1234 567890"
       responses:
         '200':
           description: Дополнительные данные успешно созданы/обновлены
