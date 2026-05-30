@@ -1,0 +1,1095 @@
+openapi: 3.0.0
+info:
+  title: Auto Credit Application System API
+  description: API для управления заявками на автокредит
+  version: 1.0.0
+  contact:
+    name: Support Team
+servers:
+  - url: http://localhost:8080/
+    description: Development server
+
+tags:
+  - name: User
+    description: Операции пользователя (клиента)
+  - name: Moderator
+    description: Операции модератора/специалиста
+#  - name: Admin
+#    description: Административные функции
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    PersonalData:
+      type: object
+      required:
+        - fullName
+        - birthDate
+        - passport
+      properties:
+        fullName:
+          type: string
+          description: ФИО клиента
+          example: "Иванов Иван Иванович"
+        birthDate:
+          type: string
+          format: date
+          description: Дата рождения (ГГГГ-ММ-ДД)
+          example: "1990-05-15"
+        passport:
+          type: string
+          description: Серия и номер паспорта (10 цифр)
+          minLength: 10
+          maxLength: 10
+          pattern: '^\d{10}$'
+          example: "1234567890"
+    
+    FinancialData:
+      type: object
+      required:
+        - monthlyIncome
+      properties:
+        monthlyIncome:
+          type: number
+          format: double
+          description: Ежемесячный доход
+          minimum: 0
+          example: 75000.00
+
+    CarDataLess:
+      type: object
+      required:
+        -carId
+      properties:
+        carId:
+          type: string
+          format: uuid
+
+    CarData:
+      type: object
+      required:
+        - id
+        - model
+        - year
+        - price
+      properties:
+        id:
+          type: string
+          format: uuid
+        model:
+          type: string
+          description: Модель автомобиля
+          example: "Camry"
+        year:
+          type: integer
+          description: Год выпуска
+          minimum: 1900
+          maximum: 2026
+          example: 2022
+        price:
+          type: number
+          format: double
+          description: Стоимость автомобиля
+          minimum: 0
+          example: 2500000.00
+    
+    LoanParameters:
+      type: object
+      required:
+        - amount
+        - downPayment
+        - termMonths
+      properties:
+        amount:
+          type: number
+          format: double
+          description: Сумма кредита
+          minimum: 0
+          example: 2000000.00
+        downPayment:
+          type: number
+          format: double
+          description: Первоначальный взнос
+          minimum: 0
+          example: 500000.00
+        termMonths:
+          type: integer
+          description: Срок кредита в месяцах
+          minimum: 1
+          maximum: 120
+          example: 60
+    
+    CreateApplicationRequest:
+      type: object
+      required:
+        - carData
+        - loanParameters
+      properties:
+        carData:
+          $ref: '#/components/schemas/CarDataLess'
+        loanParameters:
+          $ref: '#/components/schemas/LoanParameters'
+    
+    TakeApplicationRequest:
+      type: object
+      required:
+        - employeeId
+      properties:
+        employeeId:
+          type: string
+          description: ID сотрудника
+          example: "MOD001"
+    
+    ApproveApplicationRequest:
+      type: object
+      required:
+        - moderatorId
+      properties:
+        moderatorId:
+          type: string
+          description: ID модератора
+          example: "MOD001"
+    
+    RejectApplicationRequest:
+      type: object
+      required:
+        - moderatorId
+        - reason
+      properties:
+        moderatorId:
+          type: string
+          description: ID модератора
+          example: "MOD001"
+        reason:
+          type: string
+          description: Причина отказа
+          minLength: 1
+          example: "Недостаточный доход"
+    
+    SearchApplicationsRequest:
+      type: object
+      properties:
+        searchString:
+          type: string
+          description: Поиск по ФИО или номеру паспорта
+          example: "Иванов"
+        status:
+          type: string
+          enum: [NEW, IN_PROGRESS, APPROVED, REJECTED, EXPIRED]
+          description: Статус заявки
+        dateFrom:
+          type: string
+          format: date
+          description: Дата создания с
+          example: "2026-01-01"
+        dateTo:
+          type: string
+          format: date
+          description: Дата создания по
+          example: "2026-12-31"
+        moderatorId:
+          type: string
+          description: ID модератора
+          example: "MOD001"
+    
+    StatisticsRequest:
+      type: object
+      required:
+        - startDate
+        - endDate
+      properties:
+        startDate:
+          type: string
+          format: date
+          description: Дата начала периода
+          example: "2026-01-01"
+        endDate:
+          type: string
+          format: date
+          description: Дата окончания периода
+          example: "2026-12-31"
+        department:
+          type: string
+          description: Фильтр по отделению
+          example: "Moscow Branch"
+        moderatorId:
+          type: string
+          description: Фильтр по модератору
+          example: "MOD001"
+    
+    AdminStatusChangeRequest:
+      type: object
+      required:
+        - adminId
+        - newStatus
+      properties:
+        adminId:
+          type: string
+          description: ID администратора
+          example: "ADM001"
+        newStatus:
+          type: string
+          enum: [NEW, IN_PROGRESS, APPROVED, REJECTED, EXPIRED]
+          description: Новый статус заявки
+        comment:
+          type: string
+          description: Комментарий администратора
+          example: "Заявка пересмотрена по обращению клиента"
+    
+    CreateApplicationResponse:
+      type: object
+      properties:
+        applicationId:
+          type: string
+          description: Уникальный ID заявки
+          example: "APP_20260115_001"
+        status:
+          type: string
+          enum: [NEW]
+          example: "NEW"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2026-01-15T10:30:00Z"
+    
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Сообщение об ошибке
+          example: "Возраст на момент подачи заявки должен быть не менее 18 лет"
+        field:
+          type: string
+          description: Поле, вызвавшее ошибку
+          example: "birthDate"
+    CreateCarRequest:
+      type: object
+      required:
+        - brand
+        - model
+        - year
+        - cost
+      properties:
+        brand:
+          type: string
+          description: Марка автомобиля
+          minLength: 1
+          maxLength: 100
+          example: "Toyota"
+        model:
+          type: string
+          description: Модель автомобиля
+          minLength: 1
+          maxLength: 100
+          example: "Camry"
+        year:
+          type: string
+          format: date
+          description: Год выпуска (или дата выпуска)
+          example: "2022-01-01"
+        cost:
+          type: number
+          format: decimal
+          description: Стоимость автомобиля
+          minimum: 0
+          example: 2500000.00
+    HistoryEntry:
+      type: object
+      properties:
+        id:
+          type: string
+        applicationId:
+          type: string
+        userId:
+          type: string
+        userRole:
+          type: string
+          enum: [USER, MODERATOR, ADMIN, SYSTEM]
+        oldStatus:
+          type: string
+        newStatus:
+          type: string
+        comment:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+    Token:
+      type: object
+      required: [ token ]
+      properties:
+        token:
+          type: string
+          description: JWT для заголовка Authorization Bearer
+
+    User:
+      type: object
+      required: [ id, email, role ]
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        role:
+          type: string
+          enum: [ admin, user ]
+        createdAt:
+          type: string
+          format: date-time
+          nullable: true
+          
+    StatisticsResponse:
+      type: object
+      properties:
+        totalApplications:
+          type: integer
+          example: 1250
+        approvedCount:
+          type: integer
+          example: 850
+        rejectedCount:
+          type: integer
+          example: 400
+        rejectionReasons:
+          type: object
+          additionalProperties:
+            type: integer
+          example:
+            "Недостаточный доход": 200
+            "Низкий скоринговый балл": 150
+            "Несоответствие критериям": 50
+        averageProcessingTimeHours:
+          type: number
+          format: double
+          example: 48.5
+        conversionRate:
+          type: number
+          format: double
+          example: 68.0
+    
+    ApplicationListItem:
+      type: object
+      properties:
+        id:
+          type: string
+        maskedPassport:
+          type: string
+          description: Маскированный паспорт (**********)
+        fullName:
+          type: string
+        status:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        moderatorId:
+          type: string
+        score:
+          type: integer
+    
+    ApplicationDetails:
+      type: object
+      properties:
+        id:
+          type: string
+        maskedPassport:
+          type: string
+        fullName:
+          type: string
+        birthDate:
+          type: string
+          format: date
+        monthlyIncome:
+          type: number
+        carBrand:
+          type: string
+        carModel:
+          type: string
+        carYear:
+          type: integer
+        carPrice:
+          type: number
+        loanAmount:
+          type: number
+        downPayment:
+          type: number
+        loanTermMonths:
+          type: integer
+        status:
+          type: string
+        score:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    
+    UserApplicationStatus:
+      type: object
+      properties:
+        applicationId:
+          type: string
+        status:
+          type: string
+          enum: [NEW, IN_PROGRESS, APPROVED, REJECTED, EXPIRED]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        carInfo:
+          type: string
+          description: Краткая информация об автомобиле
+          example: "Toyota Camry 2022"
+        loanAmount:
+          type: number
+
+security:
+  - BearerAuth: []
+
+paths:
+
+  /users/additional-data:
+    post:
+      tags:
+        - User
+      summary: Создание дополнительных данных пользователя
+      description: |
+        Создаёт или обновляет дополнительные данные пользователя: дату рождения, 
+        ежемесячный доход и пароль.
+        Доступно только авторизованным пользователям с ролью USER.
+      operationId: createUserAdditionalData
+      security:
+        - BearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - birthday
+                - monthlyIncome
+                - passport
+              properties:
+                birthday:
+                  type: string
+                  format: date-time
+                  description: Дата рождения пользователя
+                  example: "1990-05-15T00:00:00Z"
+                monthlyIncome:
+                  type: number
+                  format: double
+                  description: Ежемесячный доход пользователя
+                  minimum: 0
+                  example: 75000.00
+                passport:
+                  type: string
+                  description: Паспорт пользователя
+                  minLength: 13
+                  maxLength: 13
+                  format: passport
+                  example: "1234 567890"
+      responses:
+        '200':
+          description: Дополнительные данные успешно созданы/обновлены
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                    description: ID записи дополнительных данных
+                    example: "550e8400-e29b-41d4-a716-446655440000"
+                  userId:
+                    type: string
+                    format: uuid
+                    description: ID пользователя
+                    example: "550e8400-e29b-41d4-a716-446655440001"
+                  birthday:
+                    type: string
+                    format: date-time
+                    example: "1990-05-15T00:00:00Z"
+                  monthlyIncome:
+                    type: number
+                    format: double
+                    example: 75000.00
+                  createdAt:
+                    type: string
+                    format: date-time
+                    example: "2026-05-30T10:00:00Z"
+                  updatedAt:
+                    type: string
+                    format: date-time
+                    example: "2026-05-30T10:00:00Z"
+        '400':
+          description: Ошибка валидации входных данных
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidBirthday:
+                  summary: Некорректная дата рождения
+                  value:
+                    error: "Дата рождения не может быть в будущем"
+                    field: "birthday"
+                invalidIncome:
+                  summary: Некорректный доход
+                  value:
+                    error: "Ежемесячный доход должен быть больше 0"
+                    field: "monthlyIncome"
+                invalidPassword:
+                  summary: Слабый пароль
+                  value:
+                    error: "Пароль должен содержать минимум 6 символов"
+                    field: "password"
+        '401':
+          description: Пользователь не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "Требуется авторизация"
+        '403':
+          description: Доступ запрещён (требуется роль USER)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "Недостаточно прав для выполнения операции"
+        '409':
+          description: Конфликт данных
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "Пользователь с таким email уже существует"
+
+  /cars:
+    post:
+      tags:
+        - User
+      summary: Добавление нового автомобиля
+      description: |
+        Создаёт новую запись об автомобиле в справочнике.
+        Доступно модераторам и администраторам.
+      operationId: createCar
+      security:
+        - BearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCarRequest'
+      responses:
+        '201':
+          description: Автомобиль успешно добавлен
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  carId:
+                    type: string
+                    format: uuid
+                    description: ID созданного автомобиля
+                    example: "550e8400-e29b-41d4-a716-446655440000"
+        '400':
+          description: Ошибка валидации данных
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Не авторизован
+        '403':
+          description: Недостаточно прав (требуется роль MODERATOR или ADMIN)
+          
+  /register:
+    post:
+      tags: [ Auth ]
+      summary: "Регистрация пользователя"
+      description: >
+        Создаёт нового пользователя и возвращает его данные.
+        Реализация этого эндпоинта является **дополнительным заданием**.
+        Для авторизации в рамках обязательной части используйте `/dummyLogin`.
+        Доступен без авторизации.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [ email, fullName,password, role ]
+              properties:
+                email:
+                  type: string
+                  format: email
+                fullName:
+                  type: string
+                password:
+                  type: string
+                role:
+                  type: string
+                  enum: [ admin, user ]
+
+      responses:
+        '201':
+          description: Пользователь создан
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+        '400':
+          description: Неверный запрос или email уже занят
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+
+  /login:
+    post:
+      tags: [ Auth ]
+      summary: "Авторизация по email и паролю"
+      description: >
+        Авторизует пользователя по email и паролю, возвращает JWT.
+        Реализация этого эндпоинта является **дополнительным заданием**.
+        Для авторизации в рамках обязательной части используйте `/dummyLogin`.
+        Доступен без авторизации.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [ email, password ]
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Успешная авторизация
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Token'
+        '401':
+          description: Неверные учётные данные
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+  
+  
+
+  /applications:
+    post:
+      tags:
+        - User
+      summary: Создание заявки клиентом
+      description: |
+        FR-1, FR-2 - создание новой заявки.
+      operationId: createApplication
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateApplicationRequest'
+      responses:
+        '201':
+          description: Заявка успешно создана
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateApplicationResponse'
+        '400':
+          description: Ошибка валидации
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Дубль заявки (за последние 24 часа)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Бизнес-правила нарушены
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Не авторизован
+        '403':
+          description: Недостаточно прав (требуется роль USER)
+  
+  /my-applications:
+    get:
+      tags:
+        - User
+      summary: Просмотр статусов своих заявок
+      description: |
+        Пользователь может видеть список своих заявок и их статусы.
+        Паспортные данные маскируются (FR-9).
+      operationId: getMyApplications
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [NEW, IN_PROGRESS, APPROVED, REJECTED, EXPIRED]
+          description: Фильтр по статусу
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Список заявок текущего пользователя
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  content:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/UserApplicationStatus'
+                  totalElements:
+                    type: integer
+                  totalPages:
+                    type: integer
+        '401':
+          description: Не авторизован
+        '403':
+          description: Недостаточно прав (требуется роль USER)
+  
+  /my-applications/{applicationId}:
+    get:
+      tags:
+        - User
+      summary: Детальный просмотр своей заявки
+      description: |
+        Пользователь может посмотреть детали своей заявки.
+        Паспортные данные маскируются (FR-9).
+      operationId: getMyApplicationById
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: applicationId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Детальная информация о заявке пользователя
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationDetails'
+        '401':
+          description: Не авторизован
+        '403':
+          description: Недостаточно прав или попытка доступа к чужой заявке
+        '404':
+          description: Заявка не найдена
+
+
+
+  /applications/{applicationId}/take:
+    post:
+      tags:
+        - Moderator
+      summary: Взять заявку в работу
+      description: FR-3 - модератор берёт заявку в работу
+      operationId: takeApplication
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: applicationId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Статус изменён на IN_PROGRESS
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "IN_PROGRESS"
+        '400':
+          description: Заявка не в статусе NEW
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Не авторизован
+        '403':
+          description: Недостаточно прав (требуется роль MODERATOR)
+        '404':
+          description: Заявка не найдена
+  
+  /applications/{applicationId}/approve:
+    post:
+      tags:
+        - Moderator
+      summary: Одобрить заявку
+      description: FR-4 - модератор одобряет заявку
+      operationId: approveApplication
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: applicationId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Заявка одобрена
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "APPROVED"
+        '400':
+          description: Заявка не в статусе IN_PROGRESS
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Не авторизован
+        '403':
+          description: Недостаточно прав (требуется роль MODERATOR)
+        '404':
+          description: Заявка не найдена
+  
+  /applications/{applicationId}/reject:
+    post:
+      tags:
+        - Moderator
+      summary: Отклонить заявку
+      description: FR-5 - модератор отклоняет заявку с указанием причины
+      operationId: rejectApplication
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: applicationId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Заявка отклонена
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "REJECTED"
+        '400':
+          description: Заявка не в статусе IN_PROGRESS или не указана причина
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Не авторизован
+        '403':
+          description: Недостаточно прав (требуется роль MODERATOR)
+        '404':
+          description: Заявка не найдена
+
+  # ==================== АДМИНИСТРАТОР (ADMIN) ====================
+#  /admin/applications/{applicationId}/history:
+#    get:
+#      tags:
+#        - Admin
+#      summary: Просмотр истории заявки
+#      description: FR-8 - полная история изменений (доступно только админам)
+#      operationId: getApplicationHistory
+#      security:
+#        - BearerAuth: []
+#      parameters:
+#        - name: applicationId
+#          in: path
+#          required: true
+#          schema:
+#            type: string
+#      responses:
+#        '200':
+#          description: История заявки
+#          content:
+#            application/json:
+#              schema:
+#                type: array
+#                items:
+#                  $ref: '#/components/schemas/HistoryEntry'
+#        '401':
+#          description: Не авторизован
+#        '403':
+#          description: Недостаточно прав (требуется роль ADMIN)
+#        '404':
+#          description: Заявка не найдена
+#
+#  /admin/statistics:
+#    get:
+#      tags:
+#        - Admin
+#      summary: Получение статистики по заявкам
+#      description: FR-10 - агрегированные данные за период (только для админов)
+#      operationId: getStatistics
+#      security:
+#        - BearerAuth: []
+#      parameters:
+#        - name: startDate
+#          in: query
+#          required: true
+#          schema:
+#            type: string
+#            format: date
+#        - name: endDate
+#          in: query
+#          required: true
+#          schema:
+#            type: string
+#            format: date
+#        - name: department
+#          in: query
+#          schema:
+#            type: string
+#        - name: moderatorId
+#          in: query
+#          schema:
+#            type: string
+#      responses:
+#        '200':
+#          description: Статистические данные
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/StatisticsResponse'
+#        '400':
+#          description: Неверный период
+#        '401':
+#          description: Не авторизован
+#        '403':
+#          description: Недостаточно прав (требуется роль ADMIN)
+#
+#  /admin/applications/{applicationId}/status:
+#    put:
+#      tags:
+#        - Admin
+#      summary: Административное изменение статуса
+#      description: FR-13 - админ может вручную изменить статус заявки
+#      operationId: adminChangeStatus
+#      security:
+#        - BearerAuth: []
+#      parameters:
+#        - name: applicationId
+#          in: path
+#          required: true
+#          schema:
+#            type: string
+#      requestBody:
+#        required: true
+#        content:
+#          application/json:
+#            schema:
+#              $ref: '#/components/schemas/AdminStatusChangeRequest'
+#      responses:
+#        '200':
+#          description: Статус изменён
+#          content:
+#            application/json:
+#              schema:
+#                type: object
+#                properties:
+#                  applicationId:
+#                    type: string
+#                  oldStatus:
+#                    type: string
+#                  newStatus:
+#                    type: string
+#        '400':
+#          description: Некорректный запрос
+#        '401':
+#          description: Не авторизован
+#        '403':
+#          description: Недостаточно прав (требуется роль ADMIN)
+#        '404':
+#          description: Заявка не найдена
+
+  # ==================== СИСТЕМНЫЕ ЭНДПОИНТЫ (INTERNAL) ====================
+#  /system/check-expired:
+#    post:
+#      tags:
+#        - Admin
+#      summary: Автоматическая проверка просроченных заявок
+#      description: |
+#        FR-6.1, FR-6.2 - вызывается планировщиком.
+#        Требует системный токен или внутренний вызов.
+#      operationId: checkExpiredApplications
+#      responses:
+#        '200':
+#          description: Проверка выполнена
+#          content:
+#            application/json:
+#              schema:
+#                type: object
+#                properties:
+#                  expiredCount:
+#                    type: integer
+#                  notified:
+#                    type: boolean
+#        '401':
+#          description: Не авторизован
