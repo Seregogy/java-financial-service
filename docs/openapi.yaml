@@ -6,8 +6,6 @@ info:
   contact:
     name: Support Team
 servers:
-  - url: https://api.credit-bank.com/
-    description: Production server
   - url: http://localhost:8080/
     description: Development server
 
@@ -459,7 +457,129 @@ security:
   - BearerAuth: []
 
 paths:
-  
+
+  /users/additional-data:
+    post:
+      tags:
+        - User
+      summary: Создание дополнительных данных пользователя
+      description: |
+        Создаёт или обновляет дополнительные данные пользователя: дату рождения, 
+        ежемесячный доход и пароль.
+        Доступно только авторизованным пользователям с ролью USER.
+      operationId: createUserAdditionalData
+      security:
+        - BearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - birthday
+                - monthlyIncome
+                - password
+              properties:
+                birthday:
+                  type: string
+                  format: date-time
+                  description: Дата рождения пользователя
+                  example: "1990-05-15T00:00:00Z"
+                monthlyIncome:
+                  type: number
+                  format: double
+                  description: Ежемесячный доход пользователя
+                  minimum: 0
+                  example: 75000.00
+                password:
+                  type: string
+                  description: Пароль пользователя
+                  minLength: 6
+                  maxLength: 100
+                  format: password
+                  example: "securePassword123"
+      responses:
+        '200':
+          description: Дополнительные данные успешно созданы/обновлены
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                    description: ID записи дополнительных данных
+                    example: "550e8400-e29b-41d4-a716-446655440000"
+                  userId:
+                    type: string
+                    format: uuid
+                    description: ID пользователя
+                    example: "550e8400-e29b-41d4-a716-446655440001"
+                  birthday:
+                    type: string
+                    format: date-time
+                    example: "1990-05-15T00:00:00Z"
+                  monthlyIncome:
+                    type: number
+                    format: double
+                    example: 75000.00
+                  createdAt:
+                    type: string
+                    format: date-time
+                    example: "2026-05-30T10:00:00Z"
+                  updatedAt:
+                    type: string
+                    format: date-time
+                    example: "2026-05-30T10:00:00Z"
+        '400':
+          description: Ошибка валидации входных данных
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidBirthday:
+                  summary: Некорректная дата рождения
+                  value:
+                    error: "Дата рождения не может быть в будущем"
+                    field: "birthday"
+                invalidIncome:
+                  summary: Некорректный доход
+                  value:
+                    error: "Ежемесячный доход должен быть больше 0"
+                    field: "monthlyIncome"
+                invalidPassword:
+                  summary: Слабый пароль
+                  value:
+                    error: "Пароль должен содержать минимум 6 символов"
+                    field: "password"
+        '401':
+          description: Пользователь не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "Требуется авторизация"
+        '403':
+          description: Доступ запрещён (требуется роль USER)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "Недостаточно прав для выполнения операции"
+        '409':
+          description: Конфликт данных
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "Пользователь с таким email уже существует"
+
   /cars:
     post:
       tags:
@@ -517,16 +637,19 @@ paths:
           application/json:
             schema:
               type: object
-              required: [ email, password, role ]
+              required: [ email, fullName,password, role ]
               properties:
                 email:
                   type: string
                   format: email
+                fullName:
+                  type: string
                 password:
                   type: string
                 role:
                   type: string
                   enum: [ admin, user ]
+
       responses:
         '201':
           description: Пользователь создан
