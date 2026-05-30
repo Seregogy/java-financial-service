@@ -14,8 +14,8 @@ tags:
     description: Операции пользователя (клиента)
   - name: Moderator
     description: Операции модератора/специалиста
-  - name: Admin
-    description: Административные функции
+#  - name: Admin
+#    description: Административные функции
 
 components:
   securitySchemes:
@@ -60,19 +60,27 @@ components:
           description: Ежемесячный доход
           minimum: 0
           example: 75000.00
-    
+
+    CarDataLess:
+      type: object
+      required:
+        -carId
+      properties:
+        carId:
+          type: string
+          format: uuid
+
     CarData:
       type: object
       required:
-        - brand
+        - id
         - model
         - year
         - price
       properties:
-        brand:
+        id:
           type: string
-          description: Марка автомобиля
-          example: "Toyota"
+          format: uuid
         model:
           type: string
           description: Модель автомобиля
@@ -119,17 +127,11 @@ components:
     CreateApplicationRequest:
       type: object
       required:
-        - personalData
-        - financialData
         - carData
         - loanParameters
       properties:
-        personalData:
-          $ref: '#/components/schemas/PersonalData'
-        financialData:
-          $ref: '#/components/schemas/FinancialData'
         carData:
-          $ref: '#/components/schemas/CarData'
+          $ref: '#/components/schemas/CarDataLess'
         loanParameters:
           $ref: '#/components/schemas/LoanParameters'
     
@@ -583,8 +585,7 @@ paths:
   /cars:
     post:
       tags:
-        - Moderator
-        - Admin
+        - User
       summary: Добавление нового автомобиля
       description: |
         Создаёт новую запись об автомобиле в справочнике.
@@ -702,7 +703,7 @@ paths:
               schema: { $ref: '#/components/schemas/ErrorResponse' }
   
   
-  # ==================== ПОЛЬЗОВАТЕЛЬ (USER) ====================
+
   /applications:
     post:
       tags:
@@ -710,7 +711,6 @@ paths:
       summary: Создание заявки клиентом
       description: |
         FR-1, FR-2 - создание новой заявки.
-        Доступно только пользователям с ролью USER.
       operationId: createApplication
       security:
         - BearerAuth: []
@@ -830,98 +830,8 @@ paths:
         '404':
           description: Заявка не найдена
 
-  # ==================== МОДЕРАТОР (MODERATOR) ====================
-  /applications/search:
-    get:
-      tags:
-        - Moderator
-      summary: Поиск заявок (для модератора)
-      description: FR-12 - поиск заявок по различным критериям. Доступно модераторам и админам.
-      operationId: searchApplicationsModerator
-      security:
-        - BearerAuth: []
-      parameters:
-        - name: searchString
-          in: query
-          schema:
-            type: string
-        - name: status
-          in: query
-          schema:
-            type: string
-            enum: [NEW, IN_PROGRESS, APPROVED, REJECTED, EXPIRED]
-        - name: dateFrom
-          in: query
-          schema:
-            type: string
-            format: date
-        - name: dateTo
-          in: query
-          schema:
-            type: string
-            format: date
-        - name: moderatorId
-          in: query
-          schema:
-            type: string
-        - name: page
-          in: query
-          schema:
-            type: integer
-            default: 0
-        - name: size
-          in: query
-          schema:
-            type: integer
-            default: 20
-      responses:
-        '200':
-          description: Результаты поиска
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  content:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/ApplicationListItem'
-                  totalElements:
-                    type: integer
-        '401':
-          description: Не авторизован
-        '403':
-          description: Недостаточно прав (требуется роль MODERATOR или ADMIN)
-  
-  /applications/{applicationId}:
-    get:
-      tags:
-        - Moderator
-      summary: Получение деталей заявки (для модератора/админа)
-      description: FR-9 - полная информация с маскированными паспортными данными
-      operationId: getApplicationDetailsModerator
-      security:
-        - BearerAuth: []
-      parameters:
-        - name: applicationId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Детальная информация
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApplicationDetails'
-        '401':
-          description: Не авторизован
-        '403':
-          description: Недостаточно прав (требуется роль MODERATOR или ADMIN)
-        '404':
-          description: Заявка не найдена
-  
+
+
   /applications/{applicationId}/take:
     post:
       tags:
@@ -1058,146 +968,146 @@ paths:
           description: Заявка не найдена
 
   # ==================== АДМИНИСТРАТОР (ADMIN) ====================
-  /admin/applications/{applicationId}/history:
-    get:
-      tags:
-        - Admin
-      summary: Просмотр истории заявки
-      description: FR-8 - полная история изменений (доступно только админам)
-      operationId: getApplicationHistory
-      security:
-        - BearerAuth: []
-      parameters:
-        - name: applicationId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: История заявки
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/HistoryEntry'
-        '401':
-          description: Не авторизован
-        '403':
-          description: Недостаточно прав (требуется роль ADMIN)
-        '404':
-          description: Заявка не найдена
-  
-  /admin/statistics:
-    get:
-      tags:
-        - Admin
-      summary: Получение статистики по заявкам
-      description: FR-10 - агрегированные данные за период (только для админов)
-      operationId: getStatistics
-      security:
-        - BearerAuth: []
-      parameters:
-        - name: startDate
-          in: query
-          required: true
-          schema:
-            type: string
-            format: date
-        - name: endDate
-          in: query
-          required: true
-          schema:
-            type: string
-            format: date
-        - name: department
-          in: query
-          schema:
-            type: string
-        - name: moderatorId
-          in: query
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Статистические данные
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/StatisticsResponse'
-        '400':
-          description: Неверный период
-        '401':
-          description: Не авторизован
-        '403':
-          description: Недостаточно прав (требуется роль ADMIN)
-  
-  /admin/applications/{applicationId}/status:
-    put:
-      tags:
-        - Admin
-      summary: Административное изменение статуса
-      description: FR-13 - админ может вручную изменить статус заявки
-      operationId: adminChangeStatus
-      security:
-        - BearerAuth: []
-      parameters:
-        - name: applicationId
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AdminStatusChangeRequest'
-      responses:
-        '200':
-          description: Статус изменён
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  applicationId:
-                    type: string
-                  oldStatus:
-                    type: string
-                  newStatus:
-                    type: string
-        '400':
-          description: Некорректный запрос
-        '401':
-          description: Не авторизован
-        '403':
-          description: Недостаточно прав (требуется роль ADMIN)
-        '404':
-          description: Заявка не найдена
+#  /admin/applications/{applicationId}/history:
+#    get:
+#      tags:
+#        - Admin
+#      summary: Просмотр истории заявки
+#      description: FR-8 - полная история изменений (доступно только админам)
+#      operationId: getApplicationHistory
+#      security:
+#        - BearerAuth: []
+#      parameters:
+#        - name: applicationId
+#          in: path
+#          required: true
+#          schema:
+#            type: string
+#      responses:
+#        '200':
+#          description: История заявки
+#          content:
+#            application/json:
+#              schema:
+#                type: array
+#                items:
+#                  $ref: '#/components/schemas/HistoryEntry'
+#        '401':
+#          description: Не авторизован
+#        '403':
+#          description: Недостаточно прав (требуется роль ADMIN)
+#        '404':
+#          description: Заявка не найдена
+#
+#  /admin/statistics:
+#    get:
+#      tags:
+#        - Admin
+#      summary: Получение статистики по заявкам
+#      description: FR-10 - агрегированные данные за период (только для админов)
+#      operationId: getStatistics
+#      security:
+#        - BearerAuth: []
+#      parameters:
+#        - name: startDate
+#          in: query
+#          required: true
+#          schema:
+#            type: string
+#            format: date
+#        - name: endDate
+#          in: query
+#          required: true
+#          schema:
+#            type: string
+#            format: date
+#        - name: department
+#          in: query
+#          schema:
+#            type: string
+#        - name: moderatorId
+#          in: query
+#          schema:
+#            type: string
+#      responses:
+#        '200':
+#          description: Статистические данные
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/StatisticsResponse'
+#        '400':
+#          description: Неверный период
+#        '401':
+#          description: Не авторизован
+#        '403':
+#          description: Недостаточно прав (требуется роль ADMIN)
+#
+#  /admin/applications/{applicationId}/status:
+#    put:
+#      tags:
+#        - Admin
+#      summary: Административное изменение статуса
+#      description: FR-13 - админ может вручную изменить статус заявки
+#      operationId: adminChangeStatus
+#      security:
+#        - BearerAuth: []
+#      parameters:
+#        - name: applicationId
+#          in: path
+#          required: true
+#          schema:
+#            type: string
+#      requestBody:
+#        required: true
+#        content:
+#          application/json:
+#            schema:
+#              $ref: '#/components/schemas/AdminStatusChangeRequest'
+#      responses:
+#        '200':
+#          description: Статус изменён
+#          content:
+#            application/json:
+#              schema:
+#                type: object
+#                properties:
+#                  applicationId:
+#                    type: string
+#                  oldStatus:
+#                    type: string
+#                  newStatus:
+#                    type: string
+#        '400':
+#          description: Некорректный запрос
+#        '401':
+#          description: Не авторизован
+#        '403':
+#          description: Недостаточно прав (требуется роль ADMIN)
+#        '404':
+#          description: Заявка не найдена
 
   # ==================== СИСТЕМНЫЕ ЭНДПОИНТЫ (INTERNAL) ====================
-  /system/check-expired:
-    post:
-      tags:
-        - Admin
-      summary: Автоматическая проверка просроченных заявок
-      description: |
-        FR-6.1, FR-6.2 - вызывается планировщиком.
-        Требует системный токен или внутренний вызов.
-      operationId: checkExpiredApplications
-      responses:
-        '200':
-          description: Проверка выполнена
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  expiredCount:
-                    type: integer
-                  notified:
-                    type: boolean
-        '401':
-          description: Не авторизован
+#  /system/check-expired:
+#    post:
+#      tags:
+#        - Admin
+#      summary: Автоматическая проверка просроченных заявок
+#      description: |
+#        FR-6.1, FR-6.2 - вызывается планировщиком.
+#        Требует системный токен или внутренний вызов.
+#      operationId: checkExpiredApplications
+#      responses:
+#        '200':
+#          description: Проверка выполнена
+#          content:
+#            application/json:
+#              schema:
+#                type: object
+#                properties:
+#                  expiredCount:
+#                    type: integer
+#                  notified:
+#                    type: boolean
+#        '401':
+#          description: Не авторизован
