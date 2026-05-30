@@ -37,11 +37,6 @@ public class IsActiveLoanUseCase
         Duration duration = Duration.between(startTime, LocalDateTime.now());
         boolean isActive = duration.toHours() <= MAX_ACTIVE_HOURS;
 
-
-        // if (!isActive && currentStatus != Status.EXPIRED) {
-        // loanRepository.markAsExpired(loan);
-        // }
-
         return isActive;
     }
 }

@@ -25,13 +25,11 @@ import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
-//СТРАШНЫЙ ВАЙБКОД. МОИ СИЛЫ УЖЕ ИССЯКЛИ И ПРИШЛОСЬ ПРИБЕГНУТЬ К ЭТОМУ =(
 public class GodController {
     private final UserAdditionalDataRepository userAdditionalDataRepository;
 
     private final RequireRoleUseCase requireRoleUseCase;
 
-    // Loans
     private final CreateLoanUseCase createLoanUseCase;
     private final GetLoansUseCase getLoansUseCase;
     private final GetLoanByIdUseCase getLoanByIdUseCase;
@@ -40,10 +38,8 @@ public class GodController {
 
     private final CarRepository carRepository;
 
-    // History
     private final GetLoansHistoryUseCase getLoansHistoryUseCase;
 
-    // ==================== USER ENDPOINTS ====================
 
     public record UserAdditionalDataRequest(
             LocalDateTime birthday,
@@ -117,14 +113,12 @@ public class GodController {
     ) {
         List<LoanApplication> loans = getLoansByUserIdUseCase.execute(userId);
 
-        // Фильтрация по статусу если указан
         if (status != null) {
             loans = loans.stream()
                     .filter(loan -> loan.getStatus() == status)
                     .toList();
         }
 
-        // Пагинация
         int start = page * size;
         int end = Math.min(start + size, loans.size());
         List<LoanApplication> paged = loans.subList(start, end);
@@ -162,7 +156,6 @@ public class GodController {
         return ResponseEntity.ok(mapToApplicationDetails(loan));
     }
 
-    // ==================== MODERATOR ENDPOINTS ====================
 
     @GetMapping("/applications/search")
     public ResponseEntity<?> searchApplications(
@@ -175,7 +168,6 @@ public class GodController {
             @RequestParam(defaultValue = "20") int size
     ) {
         List<LoanApplication> loans = getLoansUseCase.execute(page, size);
-        // Здесь должна быть логика фильтрации по параметрам
 
         List<Map<String, Object>> content = loans.stream()
                 .map(this::mapToApplicationListItem)
@@ -220,7 +212,6 @@ public class GodController {
         return ResponseEntity.ok(Map.of("status", "REJECTED"));
     }
 
-    // ==================== ADMIN ENDPOINTS ====================
 
     @GetMapping("/admin/applications/{applicationId}/history")
     public ResponseEntity<List<HistoryEntryResponse>> getApplicationHistory(@PathVariable UUID applicationId) {
@@ -282,7 +273,6 @@ public class GodController {
         ));
     }
 
-    // ==================== SYSTEM ENDPOINTS ====================
 
     @PostMapping("/system/check-expired")
     public ResponseEntity<?> checkExpiredApplications() {
@@ -293,7 +283,6 @@ public class GodController {
         ));
     }
 
-    // ==================== HELPER METHODS ====================
 
     private Map<String, Object> mapToApplicationListItem(LoanApplication loan) {
         return Map.of(
@@ -308,20 +297,7 @@ public class GodController {
         return Map.of(
                 "id", loan.getId().toString(),
                 "maskedPassport", "**********",
-//                "fullName", loan.getFullName(),
-//                "birthDate", loan.getBirthDate(),
-//                "monthlyIncome", loan.getMonthlyIncome(),
-//                "carBrand", loan.getCarBrand(),
-//                "carModel", loan.getCarModel(),
-//                "carYear", loan.getCarYear(),
-//                "carPrice", loan.getCarPrice(),
-//                "loanAmount", loan.getLoanAmount(),
-//                "downPayment", loan.getDownPayment(),
-//                "loanTermMonths", loan.getLoanTermMonths(),
                 "status", loan.getStatus().name()
-/*                "score", loan.getScore(),
-                "createdAt", loan.getCreated(),
-                "updatedAt", loan.getUpdatedAt()*/
         );
     }
 
@@ -338,11 +314,9 @@ public class GodController {
     }
 
     private String generateJwtToken(User user) {
-        // Реализация генерации JWT
         return "dummy-token-for-development";
     }
 
-    // ==================== REQUEST/RESPONSE DTOs ====================
 
     public record RegisterRequest(String email, String password, String fullName, String role) {}
     public record LoginRequest(String email, String password) {}

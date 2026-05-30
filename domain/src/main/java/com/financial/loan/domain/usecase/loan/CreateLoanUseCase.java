@@ -54,7 +54,6 @@ public class CreateLoanUseCase {
             throw new TooManyActiveLoansException(user.getId(), MAX_ACTIVE_LOANS);
         }
 
-        // 4. Проверяем на дубликаты по паспорту за последние 24 часа
         Passport passportNumber = userAdditionalDataRepository.getPassportByUserId(user.getId());
         LocalDateTime twentyFourHoursAgo = LocalDateTime.now().minusHours(DUPLICATE_CHECK_HOURS);
 
@@ -70,9 +69,7 @@ public class CreateLoanUseCase {
             throw new DuplicateLoanApplicationException(passportNumber);
         }
 
-        // 5. Создаем заявку (уже выбрасывает исключение при невалидных данных)
         LoanApplication loan = LoanApplication.create(carId, userId, loanAmount, firstPayment, term);
-        // 6. Сохраняем
         loanRepository.create(loan);
 
         return loan;
