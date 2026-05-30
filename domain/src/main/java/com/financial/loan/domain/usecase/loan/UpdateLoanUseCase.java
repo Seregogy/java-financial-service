@@ -1,10 +1,10 @@
 package com.financial.loan.domain.usecase.loan;
 
 import com.financial.loan.domain.domainexception.LoanNotFoundException;
-import com.financial.loan.domain.entity.LoanApplication;
 import com.financial.loan.domain.domainexception.LoanDeletionException;
 import com.financial.loan.domain.interfaces.LoanApplicationRepository;
 import lombok.AllArgsConstructor;
+import com.financial.loan.domain.entity.LoanApplication;
 
 import java.math.BigDecimal;
 import java.util.UUID;

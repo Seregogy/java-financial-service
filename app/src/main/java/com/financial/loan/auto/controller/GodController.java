@@ -5,7 +5,6 @@ import com.financial.loan.domain.entity.ApplicationHistory;
 import com.financial.loan.domain.entity.Car;
 import com.financial.loan.domain.entity.LoanApplication;
 import com.financial.loan.domain.entity.User;
-import com.financial.loan.domain.enums.Role;
 import com.financial.loan.domain.enums.Status;
 import com.financial.loan.domain.interfaces.CarRepository;
 import com.financial.loan.domain.usecase.loan.*;
