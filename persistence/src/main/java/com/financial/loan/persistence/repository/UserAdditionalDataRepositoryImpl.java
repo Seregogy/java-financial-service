@@ -42,9 +42,10 @@ public class UserAdditionalDataRepositoryImpl
     ) throws UserAdditionalDataAlreadyExists {
         String passportEscaped = passport.replaceAll("\\s", "");
 
-        if (context.select(USER_ADDITIONAL_DATA)
+        if (context.selectFrom(USER_ADDITIONAL_DATA)
                 .where(USER_ADDITIONAL_DATA.USER_ID.eq(userId))
-                .fetchOne() != null) {
+                .fetchOne() != null
+        ) {
             throw new UserAdditionalDataAlreadyExists("");
         }
 
@@ -52,8 +53,8 @@ public class UserAdditionalDataRepositoryImpl
                 .set(USER_ADDITIONAL_DATA.USER_ID, userId)
                 .set(USER_ADDITIONAL_DATA.BIRTHDAY, birthday.toLocalDate())
                 .set(USER_ADDITIONAL_DATA.MONTHLY_INCOME, monthlyIncome.doubleValue())
-                .set(USER_ADDITIONAL_DATA.PASSPORT_SERIES, passportEscaped.substring(0, 5))
-                .set(USER_ADDITIONAL_DATA.PASSPORT_NUMBER, passportEscaped.substring(5))
+                .set(USER_ADDITIONAL_DATA.PASSPORT_SERIES, passportEscaped.substring(0, 4))
+                .set(USER_ADDITIONAL_DATA.PASSPORT_NUMBER, passportEscaped.substring(4))
                 .returning()
                 .fetchOne()
                 .get(USER_ADDITIONAL_DATA.USER_ID);

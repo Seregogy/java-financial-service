@@ -29,6 +29,11 @@ public class LoanApplicationMapper implements RecordMapper<org.jooq.Record, Loan
                                 0, record.get(LOAN_APPLICATION.TERM_MONTH), 1,0,0
                         )
                 )
+                .status(
+                        new StatusMapper().toDomain(
+                                record.get(LOAN_APPLICATION.STATUS)
+                        )
+                )
                 .created(record.get(LOAN_APPLICATION.CREATED_AT))
                 .updated(record.get(LOAN_APPLICATION.UPDATED_AT))
                 .build();

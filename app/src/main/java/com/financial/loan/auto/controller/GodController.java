@@ -44,7 +44,7 @@ public class GodController {
     public record UserAdditionalDataRequest(
             LocalDateTime birthday,
             BigDecimal monthlyIncome,
-            String password
+            String passport
     ) { }
 
     @PostMapping("/users/additional-data")
@@ -53,13 +53,14 @@ public class GodController {
             @RequestBody UserAdditionalDataRequest request
     ) {
 
-        return ResponseEntity.ok(
-                userAdditionalDataRepository.createUserAdditionalData(
-                        userId,
-                        request.birthday,
-                        "",
-                        request.monthlyIncome,
-                        request.password
+        return ResponseEntity.ok(Map.of(
+                "id", userAdditionalDataRepository.createUserAdditionalData(
+                                userId,
+                                request.birthday,
+                                "",
+                                request.monthlyIncome,
+                                request.passport
+                        )
                 )
         );
     }
@@ -69,8 +70,6 @@ public class GodController {
             @AuthUser UUID userId,
             @RequestBody CreateApplicationRequest request
     ) throws ContextualUnsupportedRoleException {
-        requireRoleUseCase.execute(userId, Role.USER);
-
         LoanApplication loan = createLoanUseCase.execute(
                 request.carData().carId(),
                 userId,
@@ -81,7 +80,7 @@ public class GodController {
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(Map.of(
-                        "applicationId", loan.toString(),
+                        "applicationId", loan.getId().toString(),
                         "status", loan.getStatus(),
                         "createdAt", LocalDateTime.now()
                 ));
@@ -283,6 +282,12 @@ public class GodController {
         ));
     }
 
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<?> handleException(RuntimeException exc) {
+        return ResponseEntity.internalServerError().body(Map.of("error-message", exc.getMessage()));
+    }
+
+    // ==================== HELPER METHODS ====================
 
     private Map<String, Object> mapToApplicationListItem(LoanApplication loan) {
         return Map.of(
