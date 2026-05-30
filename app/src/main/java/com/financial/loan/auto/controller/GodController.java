@@ -1,12 +1,12 @@
 package com.financial.loan.auto.controller;
 
 import com.financial.loan.auto.jwt.AuthUser;
-import com.financial.loan.domain.entity.ApplicationHistory;
-import com.financial.loan.domain.entity.Car;
-import com.financial.loan.domain.entity.LoanApplication;
-import com.financial.loan.domain.entity.User;
+import com.financial.loan.domain.domainexception.ContextualUnsupportedRoleException;
+import com.financial.loan.domain.entity.*;
+import com.financial.loan.domain.enums.Role;
 import com.financial.loan.domain.enums.Status;
 import com.financial.loan.domain.interfaces.CarRepository;
+import com.financial.loan.domain.interfaces.UserAdditionalDataRepository;
 import com.financial.loan.domain.usecase.loan.*;
 import com.financial.loan.domain.usecase.loanhistory.*;
 import com.financial.loan.domain.usecase.user.*;
@@ -27,6 +27,9 @@ import java.util.UUID;
 @RequiredArgsConstructor
 //СТРАШНЫЙ ВАЙБКОД. МОИ СИЛЫ УЖЕ ИССЯКЛИ И ПРИШЛОСЬ ПРИБЕГНУТЬ К ЭТОМУ =(
 public class GodController {
+    private final UserAdditionalDataRepository userAdditionalDataRepository;
+
+    private final RequireRoleUseCase requireRoleUseCase;
 
     // Loans
     private final CreateLoanUseCase createLoanUseCase;
@@ -42,13 +45,38 @@ public class GodController {
 
     // ==================== USER ENDPOINTS ====================
 
+    public record UserAdditionalDataRequest(
+            LocalDateTime birthday,
+            BigDecimal monthlyIncome,
+            String password
+    ) { }
+
+    @PostMapping("/users/additional-data")
+    public ResponseEntity<?> createUserAdditionalData(
+            @AuthUser UUID userId,
+            @RequestBody UserAdditionalDataRequest request
+    ) {
+
+        return ResponseEntity.ok(
+                userAdditionalDataRepository.createUserAdditionalData(
+                        userId,
+                        request.birthday,
+                        "",
+                        request.monthlyIncome,
+                        request.password
+                )
+        );
+    }
+
     @PostMapping("/applications")
     public ResponseEntity<?> createApplication(
             @AuthUser UUID userId,
             @RequestBody CreateApplicationRequest request
-    ) {
+    ) throws ContextualUnsupportedRoleException {
+        requireRoleUseCase.execute(userId, Role.USER);
+
         LoanApplication loan = createLoanUseCase.execute(
-                request.carData().carId() != null ? request.carData().carId() : UUID.randomUUID(),
+                request.carData().carId(),
                 userId,
                 request.loanParameters().amount(),
                 request.loanParameters().downPayment(),
@@ -64,7 +92,9 @@ public class GodController {
     }
 
     @PostMapping("/cars")
-    public ResponseEntity<?> createCar(@RequestBody CreateCarData carData) {
+    public ResponseEntity<?> createCar(
+            @RequestBody CreateCarData carData
+    ) {
         UUID id = carRepository.create(
                 Car.create(
                         carData.brand,
