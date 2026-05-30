@@ -6,6 +6,7 @@ import com.financial.loan.domain.usecase.loan.*;
 import com.financial.loan.domain.usecase.loanhistory.GetLoansHistoryUseCase;
 import com.financial.loan.domain.usecase.user.CreateUserUseCase;
 import com.financial.loan.domain.usecase.user.LoginUserUseCase;
+import com.financial.loan.domain.usecase.user.RequireRoleUseCase;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
@@ -17,6 +18,13 @@ public class UseCaseModule {
             UserRepository userRepository
     ) {
         return new CreateUserUseCase(passwordEncodeService, userRepository);
+    }
+
+    @Bean
+    RequireRoleUseCase provideRequireRoleUseCase(
+            UserRepository userRepository
+    ) {
+        return new RequireRoleUseCase(userRepository);
     }
 
     @Bean
