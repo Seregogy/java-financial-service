@@ -186,29 +186,47 @@ public class GodController {
 
     @PostMapping("/applications/{applicationId}/take")
     public ResponseEntity<?> takeApplication(
-            @PathVariable UUID applicationId,
-            @RequestBody TakeApplicationRequest request
+            @AuthUser UUID userId,
+            @PathVariable UUID applicationId
     ) {
-        changeStatusUseCase.execute(applicationId, Status.IN_PROGRESS, request.employeeId(), null);
-        return ResponseEntity.ok(Map.of("status", "IN_PROGRESS"));
+       // requireRoleUseCase.execute(userId, Role.MODERATOR);
+
+        UUID loanId = changeStatusUseCase
+                .execute(applicationId, Status.IN_PROGRESS, userId, null);
+
+        LoanApplication loanApplication = getLoanByIdUseCase.execute(loanId);
+
+        return ResponseEntity.ok(Map.of("status", loanApplication.getStatus().name()));
     }
 
     @PostMapping("/applications/{applicationId}/approve")
     public ResponseEntity<?> approveApplication(
-            @PathVariable UUID applicationId,
-            @RequestBody ApproveApplicationRequest request
+            @AuthUser UUID userId,
+            @PathVariable UUID applicationId
     ) {
-        changeStatusUseCase.execute(applicationId, Status.APPROVED, request.moderatorId(), null);
-        return ResponseEntity.ok(Map.of("status", "APPROVED"));
+        //requireRoleUseCase.execute(userId, Role.MODERATOR);
+
+        UUID loanId = changeStatusUseCase
+                .execute(applicationId, Status.APPROVED, userId, null);
+
+        LoanApplication loanApplication = getLoanByIdUseCase.execute(loanId);
+
+        return ResponseEntity.ok(Map.of("status", loanApplication.getStatus().name()));
     }
 
     @PostMapping("/applications/{applicationId}/reject")
     public ResponseEntity<?> rejectApplication(
-            @PathVariable UUID applicationId,
-            @RequestBody RejectApplicationRequest request
+            @AuthUser UUID userId,
+            @PathVariable UUID applicationId
     ) {
-        changeStatusUseCase.execute(applicationId, Status.REJECTED, request.moderatorId(), request.reason());
-        return ResponseEntity.ok(Map.of("status", "REJECTED"));
+        //requireRoleUseCase.execute(userId, Role.MODERATOR);
+
+        UUID loanId = changeStatusUseCase
+                .execute(applicationId, Status.REJECTED, userId, null);
+
+        LoanApplication loanApplication = getLoanByIdUseCase.execute(loanId);
+
+        return ResponseEntity.ok(Map.of("status", loanApplication.getStatus().name()));
     }
 
 
@@ -282,8 +300,8 @@ public class GodController {
         ));
     }
 
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<?> handleException(RuntimeException exc) {
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<?> handleException(Exception exc) {
         return ResponseEntity.internalServerError().body(Map.of("error-message", exc.getMessage()));
     }
 

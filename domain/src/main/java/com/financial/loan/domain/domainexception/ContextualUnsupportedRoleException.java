@@ -6,7 +6,7 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class ContextualUnsupportedRoleException extends Exception {
+public class ContextualUnsupportedRoleException extends RuntimeException {
   private Role expectedRole;
   private Role actualRole;
 }

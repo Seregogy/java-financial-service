@@ -77,6 +77,7 @@ public class LoanApplicationRepositoryImpl implements LoanApplicationRepository 
                 .set(LOAN_APPLICATION.FIRST_PAYMENT, loanApplication.getFirstPayment().doubleValue())
                 .set(LOAN_APPLICATION.TERM_MONTH, termMonths)
                 .set(LOAN_APPLICATION.UPDATED_AT, LocalDateTime.now())
+                .set(LOAN_APPLICATION.STATUS, new StatusMapper().toDb(loanApplication.getStatus()))
                 .where(LOAN_APPLICATION.ID.eq(loanApplicationId))
                 .returning()
                 .fetchOne()
