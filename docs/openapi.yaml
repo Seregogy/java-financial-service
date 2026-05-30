@@ -847,12 +847,6 @@ paths:
           required: true
           schema:
             type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/TakeApplicationRequest'
       responses:
         '200':
           description: Статус изменён на IN_PROGRESS
@@ -892,12 +886,6 @@ paths:
           required: true
           schema:
             type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ApproveApplicationRequest'
       responses:
         '200':
           description: Заявка одобрена
@@ -937,12 +925,6 @@ paths:
           required: true
           schema:
             type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RejectApplicationRequest'
       responses:
         '200':
           description: Заявка отклонена
